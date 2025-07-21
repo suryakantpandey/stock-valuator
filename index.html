@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Multi-Model Stock Valuator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .input-group {
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .input-group.highlight {
+            border-left-color: #4299E1;
+            background-color: #ebf8ff;
+        }
+        .input-label {
+            display: block;
+            font-weight: 500;
+            color: #4A5568;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #CBD5E0;
+            border-radius: 0.375rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+        }
+        .final-price-card {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        .info-icon {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #A0AEC0;
+            color: white;
+            text-align: center;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            cursor: help;
+            margin-left: 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800">Universal Multi-Model Stock Valuator</h1>
+            <p class="text-lg text-gray-600 mt-2">An intelligent tool that weights models based on industry type.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Input Section -->
+            <div class="lg:col-span-1">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2">Financial Inputs for Meta Platforms</h2>
+                    
+                    <div class="input-group" id="group-industry">
+                        <label class="input-label" for="industryType">Industry Type <span class="info-icon" title="Select the industry to highlight relevant models and apply appropriate weightings to the final price.">?</span></label>
+                        <select id="industryType" class="input-field bg-white">
+                            <option value="tech">Tech / High-Growth</option>
+                            <option value="bank">Bank / Financial Institution</option>
+                            <option value="mature">Mature / Dividend Payer</option>
+                            <option value="industrial">Industrial / Cyclical</option>
+                        </select>
+                    </div>
+
+                    <h3 class="font-semibold text-lg mt-4 mb-2 text-blue-600">General</h3>
+                    <div class="input-group" id="group-general">
+                        <label class="input-label" for="currentPrice">Current Market Price ($)</label>
+                        <input class="input-field" id="currentPrice" type="number" value="704.28">
+                        <label class="input-label mt-4" for="sharesOutstanding">Shares Outstanding (in Billions)</label>
+                        <input class="input-field" id="sharesOutstanding" type="number" step="0.01" value="2.95">
+                        <label class="input-label mt-4" for="forwardEps">Forward EPS ($)</label>
+                        <input class="input-field" id="forwardEps" type="number" step="0.01" value="25.60">
+                        <label class="input-label mt-4" for="cash">Cash & Equivalents (in Billions)</label>
+                        <input class="input-field" id="cash" type="number" step="0.1" value="70.2">
+                        <label class="input-label mt-4" for="debt">Total Debt/Borrowings (in Billions)</label>
+                        <input class="input-field" id="debt" type="number" step="0.1" value="36.0">
+                    </div>
+
+                    <h3 class="font-semibold text-lg mt-6 mb-2 text-blue-600">Intrinsic Value Models</h3>
+                    <div class="input-group" id="group-dcf">
+                        <label class="input-label">DCF Model <span class="info-icon" title="Discounted Cash Flow: Values a company based on the present value of its future cash flows.">?</span></label>
+                        <input class="input-field mt-2" id="freeCashFlow" type="number" step="0.1" value="50.0" placeholder="Net Profit/FCF (Billions)">
+                        <input class="input-field mt-2" id="fcfGrowthRate" type="number" step="0.1" value="12.0" placeholder="5-Yr Avg. Growth Rate (%)">
+                        <input class="input-field mt-2" id="wacc" type="number" step="0.1" value="11.1" placeholder="WACC (%)">
+                        <input class="input-field mt-2" id="terminalGrowthRate" type="number" step="0.1" value="3.5" placeholder="Perpetual Growth Rate (%)">
+                    </div>
+                     <div class="input-group" id="group-ddm">
+                        <label class="input-label">Dividend Discount Model (DDM) <span class="info-icon" title="Values a company based on the present value of its future dividends. Best for mature, dividend-paying companies.">?</span></label>
+                        <input class="input-field mt-2" id="dividend" type="number" step="0.01" value="2.00" placeholder="Annual Dividend/Share">
+                        <input class="input-field mt-2" id="dividendGrowth" type="number" step="0.1" value="10.0" placeholder="Dividend Growth Rate (%)">
+                        <input class="input-field mt-2" id="costOfEquity" type="number" step="0.1" value="11.3" placeholder="Cost of Equity (%)">
+                    </div>
+
+                    <h3 class="font-semibold text-lg mt-6 mb-2 text-blue-600">Relative Value Models</h3>
+                    <div class="input-group" id="group-pe">
+                         <label class="input-label">P/E Models <span class="info-icon" title="Price-to-Earnings: Values a company based on its earnings per share relative to its history or peers.">?</span></label>
+                        <input class="input-field mt-2" id="historicalPE" type="number" step="0.1" value="27.0" placeholder="Historical 5-Yr Avg. P/E">
+                        <input class="input-field mt-2" id="industryPE" type="number" step="0.1" value="28.0" placeholder="Industry Peer Avg. P/E">
+                    </div>
+                    <div class="input-group" id="group-peg">
+                         <label class="input-label">Profit Growth (PEG-based) <span class="info-icon" title="Uses profit growth rate as a proxy for a fair P/E ratio. Excellent for growth companies.">?</span></label>
+                        <input class="input-field mt-2" id="profitGrowth" type="number" step="0.1" value="20.0" placeholder="5-Yr Profit Growth Rate (%)">
+                    </div>
+                     <div class="input-group" id="group-ev-ebitda">
+                         <label class="input-label">EV/EBITDA Model <span class="info-icon" title="Values a company based on its Enterprise Value to EBITDA. Good for comparing companies with different debt levels.">?</span></label>
+                        <input class="input-field mt-2" id="ebitda" type="number" step="0.1" value="88.0" placeholder="Company EBITDA (Billions)">
+                        <input class="input-field mt-2" id="evEbitdaMultiple" type="number" step="0.1" value="18.0" placeholder="Industry EV/EBITDA Multiple">
+                    </div>
+                     <div class="input-group" id="group-ps">
+                         <label class="input-label">Price/Sales (P/S) Model <span class="info-icon" title="Values a company based on its revenue. Useful for unprofitable growth companies.">?</span></label>
+                        <input class="input-field mt-2" id="revenuePerShare" type="number" step="0.01" value="57.76" placeholder="Revenue per Share">
+                        <input class="input-field mt-2" id="psRatio" type="number" step="0.1" value="10.0" placeholder="Industry P/S Ratio">
+                    </div>
+                     <div class="input-group" id="group-margin">
+                         <label class="input-label">Target Margin Model <span class="info-icon" title="Projects future EPS based on a target net profit margin, then applies an industry P/E.">?</span></label>
+                        <input class="input-field mt-2" id="targetMargin" type="number" step="0.1" value="42.0" placeholder="Target Net Margin (%)">
+                    </div>
+                    <div class="input-group" id="group-pb">
+                         <label class="input-label">P/B Models <span class="info-icon" title="Price-to-Book: Values a company based on its book value. Essential for banks and capital-intensive industries.">?</span></label>
+                        <input class="input-field mt-2" id="bookValuePerShare" type="number" step="0.1" value="62.7" placeholder="Book Value per Share">
+                        <input class="input-field mt-2" id="industryPB" type="number" step="0.1" value="9.0" placeholder="Industry P/B Ratio">
+                        <input class="input-field mt-2" id="historicalPB" type="number" step="0.01" value="7.0" placeholder="Historical 5-Yr Avg. P/B">
+                    </div>
+
+                    <button id="calculateBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 mt-4">
+                        Calculate Valuation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="lg:col-span-2">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2">Valuation Results</h2>
+                    <div id="results-container" class="space-y-6">
+                        <p class="text-gray-500 text-center">Select an industry, enter financial data, and click "Calculate".</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p>Disclaimer: This tool is for educational purposes only and does not constitute financial advice. Data is pre-filled for Meta Platforms as an example.</p>
+        </footer>
+    </div>
+
+    <script>
+        const industryWeights = {
+            bank: { dcf: 0.15, ddm: 0.20, historicalPE: 0.15, industryPE: 0.15, profitGrowth: 0.05, historicalPB: 0.15, industryPB: 0.15, enterpriseValuePerShare: 0.0, evEbitda: 0.0, psRatio: 0.0, targetMargin: 0.0 },
+            tech: { dcf: 0.25, ddm: 0.05, historicalPE: 0.10, industryPE: 0.10, profitGrowth: 0.15, historicalPB: 0.0, industryPB: 0.0, enterpriseValuePerShare: 0.05, evEbitda: 0.15, psRatio: 0.10, targetMargin: 0.05 },
+            mature: { dcf: 0.25, ddm: 0.25, historicalPE: 0.15, industryPE: 0.15, profitGrowth: 0.05, historicalPB: 0.05, industryPB: 0.05, enterpriseValuePerShare: 0.0, evEbitda: 0.05, psRatio: 0.0, targetMargin: 0.0 },
+            industrial: { dcf: 0.20, ddm: 0.10, historicalPE: 0.10, industryPE: 0.10, profitGrowth: 0.05, historicalPB: 0.10, industryPB: 0.10, enterpriseValuePerShare: 0.05, evEbitda: 0.15, psRatio: 0.05, targetMargin: 0.0 }
+        };
+
+        const industryHighlights = {
+            bank: ['group-pb', 'group-ddm', 'group-pe'],
+            tech: ['group-dcf', 'group-peg', 'group-ps', 'group-ev-ebitda', 'group-margin'],
+            mature: ['group-ddm', 'group-dcf', 'group-pe'],
+            industrial: ['group-ev-ebitda', 'group-pb', 'group-dcf']
+        };
+
+        document.getElementById('calculateBtn').addEventListener('click', () => {
+            const inputs = {
+                currentPrice: parseFloat(document.getElementById('currentPrice').value),
+                sharesOutstanding: parseFloat(document.getElementById('sharesOutstanding').value),
+                forwardEps: parseFloat(document.getElementById('forwardEps').value),
+                cash: parseFloat(document.getElementById('cash').value),
+                debt: parseFloat(document.getElementById('debt').value),
+                freeCashFlow: parseFloat(document.getElementById('freeCashFlow').value),
+                fcfGrowthRate: parseFloat(document.getElementById('fcfGrowthRate').value) / 100,
+                wacc: parseFloat(document.getElementById('wacc').value) / 100,
+                terminalGrowthRate: parseFloat(document.getElementById('terminalGrowthRate').value) / 100,
+                dividend: parseFloat(document.getElementById('dividend').value),
+                dividendGrowth: parseFloat(document.getElementById('dividendGrowth').value) / 100,
+                costOfEquity: parseFloat(document.getElementById('costOfEquity').value) / 100,
+                historicalPE: parseFloat(document.getElementById('historicalPE').value),
+                industryPE: parseFloat(document.getElementById('industryPE').value),
+                profitGrowth: parseFloat(document.getElementById('profitGrowth').value),
+                ebitda: parseFloat(document.getElementById('ebitda').value),
+                evEbitdaMultiple: parseFloat(document.getElementById('evEbitdaMultiple').value),
+                revenuePerShare: parseFloat(document.getElementById('revenuePerShare').value),
+                psRatio: parseFloat(document.getElementById('psRatio').value),
+                targetMargin: parseFloat(document.getElementById('targetMargin').value) / 100,
+                bookValuePerShare: parseFloat(document.getElementById('bookValuePerShare').value),
+                industryPB: parseFloat(document.getElementById('industryPB').value),
+                historicalPB: parseFloat(document.getElementById('historicalPB').value)
+            };
+
+            for (const key in inputs) {
+                if (isNaN(inputs[key])) {
+                    alert(`Invalid input for ${key}. Please enter a valid number.`);
+                    return;
+                }
+            }
+
+            const results = {
+                dcf: calculateDCF(inputs),
+                ddm: calculateDDM(inputs),
+                historicalPE: calculateHistoricalPE(inputs),
+                industryPE: calculateIndustryPE(inputs),
+                profitGrowth: calculateProfitGrowth(inputs),
+                enterpriseValuePerShare: calculateEnterpriseValuePerShare(inputs),
+                evEbitda: calculateEVEBITDA(inputs),
+                psRatio: calculatePS(inputs),
+                targetMargin: calculateTargetMargin(inputs),
+                industryPB: calculateIndustryPB(inputs),
+                historicalPB: calculateHistoricalPB(inputs)
+            };
+            
+            const industry = document.getElementById('industryType').value;
+            const weights = industryWeights[industry];
+            let weightedSum = 0;
+            let totalWeight = 0;
+            for(const model in results){
+                if(weights[model] > 0 && results[model] > 0){
+                    weightedSum += results[model] * weights[model];
+                    totalWeight += weights[model];
+                }
+            }
+            const weightedMeanPrice = totalWeight > 0 ? weightedSum / totalWeight : 0;
+
+            displayResults(results, weightedMeanPrice, inputs.currentPrice);
+        });
+
+        function calculateDCF(inputs) {
+            let fcf = inputs.freeCashFlow;
+            let presentValueSum = 0;
+            for (let i = 1; i <= 5; i++) {
+                fcf *= (1 + inputs.fcfGrowthRate);
+                presentValueSum += fcf / Math.pow(1 + inputs.wacc, i);
+            }
+            const terminalFCF = fcf * (1 + inputs.terminalGrowthRate);
+            if (inputs.wacc <= inputs.terminalGrowthRate) return 0;
+            const terminalValue = terminalFCF / (inputs.wacc - inputs.terminalGrowthRate);
+            const presentTerminalValue = terminalValue / Math.pow(1 + inputs.wacc, 5);
+            const enterpriseValue = presentValueSum + presentTerminalValue;
+            const industry = document.getElementById('industryType').value;
+            const equityValue = industry === 'bank' ? enterpriseValue : enterpriseValue + inputs.cash - inputs.debt;
+            return equityValue / inputs.sharesOutstanding;
+        }
+        
+        function calculateDDM(inputs) {
+            if (inputs.costOfEquity <= inputs.dividendGrowth || inputs.costOfEquity <= 0) return 0;
+            return inputs.dividend * (1 + inputs.dividendGrowth) / (inputs.costOfEquity - inputs.dividendGrowth);
+        }
+        function calculateHistoricalPE(inputs) { return inputs.forwardEps * inputs.historicalPE; }
+        function calculateIndustryPE(inputs) { return inputs.forwardEps * inputs.industryPE; }
+        function calculateProfitGrowth(inputs) { return inputs.forwardEps * inputs.profitGrowth; }
+        function calculateEnterpriseValuePerShare(inputs) {
+            const marketCap = inputs.currentPrice * inputs.sharesOutstanding;
+            const enterpriseValue = marketCap + inputs.debt - inputs.cash;
+            return enterpriseValue / inputs.sharesOutstanding;
+        }
+        function calculateEVEBITDA(inputs) {
+            if (inputs.ebitda <= 0) return 0;
+            const enterpriseValue = inputs.ebitda * inputs.evEbitdaMultiple;
+            const equityValue = enterpriseValue + inputs.cash - inputs.debt;
+            return equityValue / inputs.sharesOutstanding;
+        }
+        function calculatePS(inputs) { return inputs.revenuePerShare * inputs.psRatio; }
+        function calculateTargetMargin(inputs) {
+            const projectedEps = inputs.revenuePerShare * inputs.targetMargin;
+            return projectedEps * inputs.industryPE;
+        }
+        function calculateIndustryPB(inputs) { return inputs.bookValuePerShare * inputs.industryPB; }
+        function calculateHistoricalPB(inputs) { return inputs.bookValuePerShare * inputs.historicalPB; }
+
+        function updateHighlights() {
+            const industry = document.getElementById('industryType').value;
+            const highlights = industryHighlights[industry];
+            document.querySelectorAll('.input-group').forEach(el => el.classList.remove('highlight'));
+            if (highlights) {
+                highlights.forEach(id => document.getElementById(id).classList.add('highlight'));
+            }
+        }
+
+        function displayResults(results, meanPrice, currentPrice) {
+            const container = document.getElementById('results-container');
+            const models = [
+                { name: 'DCF', value: results.dcf, color: 'bg-blue-600' },
+                { name: 'Dividend Discount (DDM)', value: results.ddm, color: 'bg-teal-600' },
+                { name: 'Profit Growth (PEG)', value: results.profitGrowth, color: 'bg-green-600' },
+                { name: 'Industry P/E', value: results.industryPE, color: 'bg-purple-600' },
+                { name: 'Historical P/E', value: results.historicalPE, color: 'bg-yellow-600' },
+                { name: 'EV/EBITDA Multiple', value: results.evEbitda, color: 'bg-orange-600' },
+                { name: 'Price/Sales (P/S) Ratio', value: results.psRatio, color: 'bg-red-600' },
+                { name: 'Target Margin Model', value: results.targetMargin, color: 'bg-cyan-600' },
+                { name: 'Industry P/B Ratio', value: results.industryPB, color: 'bg-indigo-600' },
+                { name: 'Historical P/B Ratio', value: results.historicalPB, color: 'bg-pink-600' }
+            ];
+            
+            const currencySymbol = ['bank', 'industrial'].includes(document.getElementById('industryType').value) ? '₹' : '$';
+
+            let finalPriceHTML = `
+                <div class="final-price-card mb-6">
+                    <h3 class="text-xl font-semibold">Final Blended Price</h3>
+                    <p class="text-5xl font-bold mt-2">${currencySymbol}${meanPrice.toFixed(2)}</p>
+                    <p class="text-sm opacity-80 mt-1">Industry-weighted average of relevant models</p>
+                </div>`;
+
+            let summaryHTML = `
+                <h3 class="text-xl font-bold mb-3">Valuation Summary</h3>
+                <div class="overflow-x-auto"><table class="min-w-full bg-white border">
+                    <thead><tr class="bg-gray-100"><th class="py-2 px-4 border-b text-left">Valuation Model</th><th class="py-2 px-4 border-b text-right">Implied Share Price</th></tr></thead><tbody>`;
+            models.forEach(model => {
+                if (model.value > 0) {
+                    summaryHTML += `<tr><td class="py-2 px-4 border-b font-medium">${model.name}</td><td class="py-2 px-4 border-b text-right font-mono">${currencySymbol}${model.value.toFixed(2)}</td></tr>`;
+                }
+            });
+            summaryHTML += `</tbody></table></div>`;
+
+            const allValues = models.map(m => m.value).concat(currentPrice, meanPrice).filter(v => v > 0);
+            const minVal = Math.min(...allValues) * 0.9;
+            const maxVal = Math.max(...allValues) * 1.1;
+            const range = maxVal - minVal;
+
+            let chartHTML = `<h3 class="text-xl font-bold mt-8 mb-4">Valuation Football Field</h3><div class="space-y-4">`;
+            models.sort((a, b) => a.value - b.value).forEach(model => {
+                if (model.value <= 0) return;
+                const leftPosition = range > 0 ? ((model.value - minVal) / range) * 100 : 50;
+                chartHTML += `
+                    <div class="w-full">
+                        <p class="font-medium text-sm mb-1">${model.name}: <span class="font-bold">${currencySymbol}${model.value.toFixed(2)}</span></p>
+                        <div class="bg-gray-200 rounded-lg w-full h-5 relative">
+                            <div class="${model.color} h-full rounded-lg" style="width: 3px; position: absolute; left: ${leftPosition}%;"></div>
+                        </div>
+                    </div>`;
+            });
+            
+            const currentPriceLeft = range > 0 ? ((currentPrice - minVal) / range) * 100 : 50;
+            chartHTML += `
+                 <div class="w-full pt-4 border-t mt-4">
+                    <p class="font-medium text-sm mb-1">Current Market Price: <span class="font-bold">${currencySymbol}${currentPrice.toFixed(2)}</span></p>
+                    <div class="bg-gray-200 rounded-lg w-full h-5 relative">
+                        <div class="bg-red-700 h-full rounded-lg" style="width: 3px; position: absolute; left: ${currentPriceLeft}%;"></div>
+                    </div>
+                </div>`;
+
+            chartHTML += `
+                <div class="w-full flex justify-between text-xs font-bold text-gray-500 mt-1">
+                    <span>${currencySymbol}${minVal.toFixed(2)}</span>
+                    <span>${currencySymbol}${maxVal.toFixed(2)}</span>
+                </div>
+            </div>`;
+
+            container.innerHTML = finalPriceHTML + summaryHTML + chartHTML;
+        }
+        
+        document.getElementById('industryType').addEventListener('change', updateHighlights);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+             document.getElementById('industryType').value = 'tech';
+             updateHighlights();
+             document.getElementById('calculateBtn').click();
+        });
+    </script>
+</body>
+</html>
